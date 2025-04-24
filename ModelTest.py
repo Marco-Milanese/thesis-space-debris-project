@@ -15,8 +15,8 @@ lossFunction = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99)) 
 
 model.train()
-inputImage.to(device)
-outputImage.to(device)
+inputImage = inputImage.to(device)
+outputImage = outputImage.to(device)
 
 outputs = model(inputImage)
 loss = lossFunction(outputs, outputImage)
