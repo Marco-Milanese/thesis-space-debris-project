@@ -19,12 +19,12 @@ print(len(TrainingSet))
 ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/lowResVal1ch', './data/Val1ch')
 print(len(ValSet))
 
-#batch_size = 200 # batch size chosen just because it divides well into 20k
-#epochs = 1500 # number of epochs specified in the paper
+batch_size = 1024 # batch size chosen as 2^10
+epochs = 1500 # number of epochs specified in the paper
 
 #test
-batch_size = 1 
-epochs = 1
+#batch_size = 1 
+#epochs = 1
 
 
 # Load the datasets into dataloaders
@@ -42,19 +42,22 @@ for epoch in range(epochs):
     # Training phase
     model.train()
     for data in trainDataLoader:
-        print('Training...')
+        print('Training')
         lowResImages, hiResImages = data 
         # Pushing the data to the available device
         lowResImages = lowResImages.to(device) 
         hiResImages = hiResImages.to(device)
 
         # Forward pass
+        print("Forward pass")
         outputs = model(lowResImages)
         loss = lossFunction(outputs, hiResImages)
 
         # Backward pass and optimization
+        print("Backward pass")
         optimizer.zero_grad()
         loss.backward()
+        print("Optimizer step")
         optimizer.step()
 
     # Validation phase to prevent overfitting
