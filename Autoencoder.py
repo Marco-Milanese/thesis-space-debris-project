@@ -26,26 +26,16 @@ class Autoencoder(nn.Module):
     def __init__(self):
         super(Autoencoder, self).__init__()
 
-        # Old Encoder
-        """self.inputLayer = nn.Conv2d(3, 64, kernel_size=1, stride=1)
-        self.enc1 = nn.Conv2d(64, 128, kernel_size=129, stride=1)
-        self.enc2 = nn.Conv2d(128, 256, kernel_size=65, stride=1)"""
+        # Encoder
+        self.inputLayer = nn.Conv2d(1, 32, kernel_size=1, stride=1, padding=0)
+        self.enc1 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
+        self.enc2 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1)
 
-        # New Encoder
-        self.inputLayer = nn.Conv2d(1, 32, kernel_size=1, stride=1)
-        self.enc1 = nn.Conv2d(32, 64, kernel_size=129, stride=1)
-        self.enc2 = nn.Conv2d(64, 128, kernel_size=65, stride=1)
+        # Decoder
+        self.dec1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
+        self.dec2 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
+        self.outputLayer = nn.ConvTranspose2d(32, 1, kernel_size=4, stride=2, padding=1)
 
-
-        # Old Decoder
-        """self.dec1 = nn.ConvTranspose2d(256, 128, kernel_size=65, stride=1)
-        self.dec2 = nn.ConvTranspose2d(128, 64, kernel_size=129, stride=1)
-        self.outputLayer = nn.ConvTranspose2d(64, 3, kernel_size=1, stride=1)"""
-
-        # New Decoder
-        self.dec1 = nn.ConvTranspose2d(128, 64, kernel_size=65, stride=1)
-        self.dec2 = nn.ConvTranspose2d(64, 32, kernel_size=129, stride=1) 
-        self.outputLayer = nn.ConvTranspose2d(32, 1, kernel_size=257, stride=1)
 
     def forward(self, x):
         # Used ReLU activation function as specified in the paper

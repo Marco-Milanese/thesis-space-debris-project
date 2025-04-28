@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from Autoencoder import Autoencoder
+from torchvision.transforms import ToPILImage
 
 
 # Select the gpu if available
@@ -19,12 +20,12 @@ print(len(TrainingSet))
 ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/lowResVal1ch', './data/Val1ch')
 print(len(ValSet))
 
-batch_size = 1024 # batch size chosen as 2^10
-epochs = 1500 # number of epochs specified in the paper
+#batch_size = 1024 # batch size chosen as 2^10
+#epochs = 20 # number of epochs specified in the paper
 
 #test
-#batch_size = 1 
-#epochs = 1
+batch_size = 5
+epochs = 20
 
 
 # Load the datasets into dataloaders
@@ -72,5 +73,14 @@ for epoch in range(epochs):
             # Forward pass
             outputs = model(lowResImages)
             valLoss = valLoss + lossFunction(outputs, hiResImages).item()
+    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {loss:.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
 
-    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {loss.item():.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
+# Display the output of the last validation batch
+to_pil_image = ToPILImage()
+finalOutput = outputs
+finalInput = lowResImages
+finalInput = to_pil_image(finalInput[0].cpu().squeeze(0))  # Convert to CPU and process the first image in the batch
+  # Assuming 'outputs' from the last validation batch is desired
+final = to_pil_image(finalOutput[0].cpu().squeeze(0))  # Convert to CPU and process the first image in the batch
+final.show()
+finalInput.show()
