@@ -27,7 +27,11 @@ class Autoencoder(nn.Module):
         super(Autoencoder, self).__init__()
 
         # Encoder
-        self.inputLayer = nn.Conv2d(1, 32, kernel_size=1, stride=1, padding=0)
+        #self.inputLayer = nn.Conv2d(1, 32, kernel_size=1, stride=1, padding=0)
+
+        # Trying a bigger kernel size to reduce the noise in the generated image
+        self.inputLayer = nn.Conv2d(1, 32, kernel_size=7, stride=1, padding=3)
+
         self.enc1 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
         self.enc2 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1)
 

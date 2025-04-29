@@ -24,5 +24,4 @@ outImage = model(randImage)
 to_pil_image = ToPILImage()
 
 highResImage.show()
-#Image.open(randImagePath).show()
 to_pil_image(outImage[0].cpu().squeeze(0)).show()
