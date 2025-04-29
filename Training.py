@@ -87,6 +87,17 @@ for epoch in range(epochs):
             # Forward pass
             outputs = model(lowResImages)
             valLoss = valLoss + lossFunction(outputs, hiResImages).item()
+    
+    torch.save(model.state_dict(), 'Autoencoder.pth')
+
+    # Auto saving of the model during Colab training
+    """
+    !git commit Autoencoder.py -m "AutoSave of the model during training"
+    !git push _u origin main
+
+    """
+
+
     print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {loss:.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
 
 # Display the output of the last validation batch
@@ -97,6 +108,3 @@ finalGenerated = to_pil_image(outputs[0].cpu().squeeze(0))
 
 finalGenerated.show()
 finalInput.show()
-
-# Saving the Model
-torch.save(model.state_dict(), 'Autoencoder.pth')
