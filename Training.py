@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 from Autoencoder import Autoencoder
 from torchvision.transforms import ToPILImage
+import os
 
 
 # Select the gpu if available
@@ -14,13 +15,13 @@ print(f"Using device: {device}")
 # Load the Training and Validation datasets
 TrainingSet = SpaceDebrisDataset('./data/trainTest.csv', './data/lowResTrain1ch', './data/Train1ch')
 # Colab Path
-TrainingSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/train.csv', '/content/thesis-space-debris-project/data/LowResTrain1ch', '/content/thesis-space-debris-project/data/Train1ch')
+#TrainingSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/train.csv', '/content/thesis-space-debris-project/data/LowResTrain1ch', '/content/thesis-space-debris-project/data/Train1ch')
 
 print(len(TrainingSet))
 
 ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/lowResVal1ch', './data/Val1ch')
 # Colab Path
-ValSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/val.csv', '/content/thesis-space-debris-project/data/LowResVal1ch', '/content/thesis-space-debris-project/data/Val1ch')
+#ValSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/val.csv', '/content/thesis-space-debris-project/data/LowResVal1ch', '/content/thesis-space-debris-project/data/Val1ch')
 
 print(len(ValSet))
 
@@ -29,13 +30,20 @@ print(len(ValSet))
 
 #test
 batch_size = 5
-epochs = 20
+epochs = 1
 
 # Load the datasets into dataloaders
 trainDataLoader = DataLoader(TrainingSet, batch_size, shuffle=True)
 valDataLoader = DataLoader(ValSet, batch_size, shuffle=True)
 
 model = Autoencoder().to(device)
+
+# Load the pre-trained model if available
+if os.path.exists('./Autoencoder.pth'):
+    print("Loading pre-trained model")
+    model.load_state_dict(torch.load('./Autoencoder.pth'))
+else:
+    print('No pre-trained model')
     
 # Defining the loss function and optimizer
 lossFunction = nn.MSELoss()
@@ -43,8 +51,12 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99)) # 
 
 for epoch in range(epochs):
     # Training phase
+    batchNumber = 0
     model.train()
     for data in trainDataLoader:
+        batchNumber += 1
+        totalBatch = len(trainDataLoader)
+        print(f"Batch {batchNumber}/{totalBatch}")
         print('Training')
         lowResImages, hiResImages = data 
         # Pushing the data to the available device
@@ -79,10 +91,12 @@ for epoch in range(epochs):
 
 # Display the output of the last validation batch
 to_pil_image = ToPILImage()
-finalOutput = outputs
-finalInput = lowResImages
-finalInput = to_pil_image(finalInput[0].cpu().squeeze(0))  # Convert to CPU and process the first image in the batch
-  # Assuming 'outputs' from the last validation batch is desired
-final = to_pil_image(finalOutput[0].cpu().squeeze(0))  # Convert to CPU and process the first image in the batch
-final.show()
+
+finalInput = to_pil_image(hiResImages[0].cpu().squeeze(0))  
+finalGenerated = to_pil_image(outputs[0].cpu().squeeze(0)) 
+
+finalGenerated.show()
 finalInput.show()
+
+# Saving the Model
+torch.save(model.state_dict(), 'Autoencoder.pth')

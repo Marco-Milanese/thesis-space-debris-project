@@ -41,32 +41,32 @@ class Autoencoder(nn.Module):
         # Used ReLU activation function as specified in the paper
         # Added skip connections as specified in the network diagram
 
-        print('\n Input Image: \n')
-        print(x.shape)
+        #print('\n Input Image: \n')
+        #print(x.shape)
         x = F.relu(self.inputLayer(x))
-        print('\n Input Layer: \n')
-        print(x.shape)
+        #print('\n Input Layer: \n')
+        #print(x.shape)
         # fist skip connection
         skip1 = x
         x = F.relu(self.enc1(x))
-        print('\n Encoder 1:  \n')
-        print(x.shape)
+        #print('\n Encoder 1:  \n')
+        #print(x.shape)
         # second skip connection
         skip2 = x
         x = F.relu(self.enc2(x))
-        print('\n Encoder 2: \n')
-        print(x.shape)
+        #print('\n Encoder 2: \n')
+        #print(x.shape)
         x = F.relu(self.dec1(x))
-        print('\n Decoder 1: \n')
-        print(x.shape)
+        #print('\n Decoder 1: \n')
+        #print(x.shape)
         # second skip connection
         x = x + skip2
         x = F.relu(self.dec2(x))
-        print('\n Decoder 2: \n')
-        print(x.shape)
+        #print('\n Decoder 2: \n')
+        #print(x.shape)
         # first skip connection
         x = x + skip1
         x = self.outputLayer(x)
-        print('\n Output Layer: \n ')
-        print(x.shape)
+        #print('\n Output Layer: \n ')
+        #print(x.shape)
         return x
