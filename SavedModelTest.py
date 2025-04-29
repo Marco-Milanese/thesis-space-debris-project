@@ -9,12 +9,13 @@ import random
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = Autoencoder().to(device)
-model.load_state_dict(torch.load('./Autoencoder.pth'))
+model.load_state_dict(torch.load('./Autoencoder.pth', map_location=device))
 
 numTestImages = 5000
 
 randNum = random.randint(0, numTestImages - 1)
-randImagePath = os.path.join('./data/LowResTest1ch', f"{randNum}.jpg")
+randImagePath = os.path.join('./data/LowResTrain1ch', f"{randNum}.jpg")
+highResImage = Image.open(os.path.join('./data/Train1ch', f"{randNum}.jpg"))
 
 randImage = ToTensor()(Image.open(randImagePath)).to(device)
 
@@ -22,5 +23,6 @@ outImage = model(randImage)
 
 to_pil_image = ToPILImage()
 
-Image.open(randImagePath).show()
+highResImage.show()
+#Image.open(randImagePath).show()
 to_pil_image(outImage[0].cpu().squeeze(0)).show()
