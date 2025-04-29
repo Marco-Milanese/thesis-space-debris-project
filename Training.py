@@ -15,13 +15,13 @@ print(f"Using device: {device}")
 # Load the Training and Validation datasets
 TrainingSet = SpaceDebrisDataset('./data/trainTest.csv', './data/lowResTrain1ch', './data/Train1ch')
 # Colab Path
-#TrainingSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/train.csv', '/content/thesis-space-debris-project/data/LowResTrain1ch', '/content/thesis-space-debris-project/data/Train1ch')
+#TrainingSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/trainTest.csv', '/content/thesis-space-debris-project/data/LowResTrain1ch', '/content/thesis-space-debris-project/data/Train1ch')
 
 print(len(TrainingSet))
 
 ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/lowResVal1ch', './data/Val1ch')
 # Colab Path
-#ValSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/val.csv', '/content/thesis-space-debris-project/data/LowResVal1ch', '/content/thesis-space-debris-project/data/Val1ch')
+#ValSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/valTest.csv', '/content/thesis-space-debris-project/data/LowResVal1ch', '/content/thesis-space-debris-project/data/Val1ch')
 
 print(len(ValSet))
 
@@ -91,20 +91,17 @@ for epoch in range(epochs):
     torch.save(model.state_dict(), 'Autoencoder.pth')
 
     # Auto saving of the model during Colab training
-    """
-    !git commit Autoencoder.py -m "AutoSave of the model during training"
-    !git push _u origin main
-
-    """
-
+    os.system('git add Autoencoder.pth')
+    os.system('git commit Autoencoder.pth -m "AutoSave of the model during training"')
+    os.system('git push -u origin main')
 
     print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {loss:.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
 
 # Display the output of the last validation batch
-to_pil_image = ToPILImage()
+"""to_pil_image = ToPILImage()
 
 finalInput = to_pil_image(hiResImages[0].cpu().squeeze(0))  
 finalGenerated = to_pil_image(outputs[0].cpu().squeeze(0)) 
 
 finalGenerated.show()
-finalInput.show()
+finalInput.show()"""
