@@ -41,7 +41,7 @@ model = Autoencoder().to(device)
 # Load the pre-trained model if available
 if os.path.exists('./Autoencoder.pth'):
     print("Loading pre-trained model")
-    model.load_state_dict(torch.load('./Autoencoder.pth'))
+    model.load_state_dict(torch.load('./Autoencoder.pth', map_location=device))
 else:
     print('No pre-trained model')
     
