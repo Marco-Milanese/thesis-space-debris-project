@@ -13,24 +13,18 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Load the Training and Validation datasets
-TrainingSet = SpaceDebrisDataset('./data/trainTest.csv', './data/lowResTrain1ch', './data/Train1ch')
-# Colab Path
-#TrainingSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/trainTest.csv', '/content/thesis-space-debris-project/data/LowResTrain1ch', '/content/thesis-space-debris-project/data/Train1ch')
+TrainingSet = SpaceDebrisDataset('./data/trainTest.csv', './data/LowResTrain1ch', './data/Train1ch')
+print('Training set size: {len(TrainingSet)}')
 
-print(len(TrainingSet))
+ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/LowResVal1ch', './data/Val1ch')
+print('Validation set size: {len(ValSet)}')
 
-ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/lowResVal1ch', './data/Val1ch')
-# Colab Path
-#ValSet = SpaceDebrisDataset('/content/thesis-space-debris-project/data/valTest.csv', '/content/thesis-space-debris-project/data/LowResVal1ch', '/content/thesis-space-debris-project/data/Val1ch')
-
-print(len(ValSet))
-
-#batch_size = 264 # batch size chosen as 2^8 good for Colab GPU memory
-#epochs = 20 
+batch_size = 264 # batch size chosen as 2^8 good for Colab GPU memory
+epochs = 10
 
 #test
-batch_size = 5
-epochs = 1
+#batch_size = 5
+#epochs = 1
 
 # Load the datasets into dataloaders
 trainDataLoader = DataLoader(TrainingSet, batch_size, shuffle=True)
