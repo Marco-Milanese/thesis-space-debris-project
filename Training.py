@@ -13,13 +13,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Load the Training and Validation datasets
-TrainingSet = SpaceDebrisDataset('./data/trainTest.csv', './data/LowResTrain1ch', './data/Train1ch')
-print('Training set size: {len(TrainingSet)}')
+TrainingSet = SpaceDebrisDataset('./data/train.csv', './data/LowResTrain1ch', './data/Train1ch')
+TrainLen = len(TrainingSet)
+print('Training set size: {TrainLen}')
 
-ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/LowResVal1ch', './data/Val1ch')
-print('Validation set size: {len(ValSet)}')
+ValSet = SpaceDebrisDataset('./data/val.csv', './data/LowResVal1ch', './data/Val1ch')
+ValLen = len(ValSet)
+print('Validation set size: {ValLen}')
 
-batch_size = 264 # batch size chosen as 2^8 good for Colab GPU memory
+batch_size = 200 # batch size chosen as 2^8 good for Colab GPU memory
 epochs = 10
 
 #test
@@ -50,23 +52,23 @@ for epoch in range(epochs):
     for data in trainDataLoader:
         batchNumber += 1
         totalBatch = len(trainDataLoader)
-        print(f"Batch {batchNumber}/{totalBatch}")
-        print('Training')
+        print(f"Epoch {epoch+1}/{epochs} Batch {batchNumber}/{totalBatch}")
+        #print('Training')
         lowResImages, hiResImages = data 
         # Pushing the data to the available device
         lowResImages = lowResImages.to(device) 
         hiResImages = hiResImages.to(device)
 
         # Forward pass
-        print("Forward pass")
+        #print("Forward pass")
         outputs = model(lowResImages)
         loss = lossFunction(outputs, hiResImages)
 
         # Backward pass and optimization
-        print("Backward pass")
+        #print("Backward pass")
         optimizer.zero_grad()
         loss.backward()
-        print("Optimizer step")
+        #print("Optimizer step")
         optimizer.step()
 
     # Validation phase to prevent overfitting
