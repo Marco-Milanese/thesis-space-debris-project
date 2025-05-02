@@ -36,6 +36,11 @@ class Autoencoder(nn.Module):
         self.enc1 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
         self.enc2 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1)
 
+        #CBAM
+
+        self.channelAttention = ChannelAttention(128, 16)
+        self.spatialAttention = SpatialAttention()
+
         # Decoder
         self.dec1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
         self.dec2 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
@@ -61,8 +66,8 @@ class Autoencoder(nn.Module):
         x = F.relu(self.enc2(x))
         #print('\n Encoder 2: \n')
         #print(x.shape)
-        x = ChannelAttention(128, 16).forward(x) * x
-        x = SpatialAttention().forward(x) * x
+        x = self.channelAttention(x) * x
+        x = self.spatialAttention(x) * x
         x = F.relu(self.dec1(x))
         #print('\n Decoder 1: \n')
         #print(x.shape)
