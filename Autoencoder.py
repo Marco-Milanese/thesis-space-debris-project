@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.nn.functional as F
+from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention
 
 
 #256x256x3-->256x256x64-->128x128x128-->64x64x256
@@ -60,6 +61,8 @@ class Autoencoder(nn.Module):
         x = F.relu(self.enc2(x))
         #print('\n Encoder 2: \n')
         #print(x.shape)
+        x = ChannelAttention(128, 16).forward(x) * x
+        x = SpatialAttention().forward(x) * x
         x = F.relu(self.dec1(x))
         #print('\n Decoder 1: \n')
         #print(x.shape)
