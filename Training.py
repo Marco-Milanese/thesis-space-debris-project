@@ -8,7 +8,14 @@ import os
 
 
 # Select the gpu if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if 'COLAB_TPU_ADDR' in os.environ:
+    print("TPU available")
+    import torch_xla
+    import torch_xla.core.xla_model as xm
+    device = xm.xla_device()
+else:
+    print("No TPU detected, using GPU if available")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print(f"Using device: {device}")
 
@@ -69,7 +76,8 @@ for epoch in range(epochs):
         optimizer.zero_grad()
         loss.backward()
         #print("Optimizer step")
-        optimizer.step()
+        #optimizer.step()
+        xm.optimizer_step(optimizer)
 
     # Validation phase to prevent overfitting
     model.eval()
@@ -91,7 +99,8 @@ for epoch in range(epochs):
     os.system('git commit Autoencoder.pth -m "AutoSave of the model during training"')
     os.system('git push -u origin main')
 
-    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {loss:.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
+
+    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {loss.item()/len(trainDataLoader):.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
 
 # Display the output of the last validation batch
 """to_pil_image = ToPILImage()
