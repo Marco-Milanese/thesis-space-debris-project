@@ -15,11 +15,11 @@ print(f"Using device: {device}")
 # Load the Training and Validation datasets
 TrainingSet = SpaceDebrisDataset('./data/train.csv', './data/LowResTrain1ch', './data/Train1ch')
 TrainLen = len(TrainingSet)
-print('Training set size: {TrainLen}')
+print(f'Training set size: {TrainLen}')
 
 ValSet = SpaceDebrisDataset('./data/val.csv', './data/LowResVal1ch', './data/Val1ch')
 ValLen = len(ValSet)
-print('Validation set size: {ValLen}')
+print(f'Validation set size: {ValLen}')
 
 batch_size = 200 # batch size chosen as 2^8 good for Colab GPU memory
 epochs = 10

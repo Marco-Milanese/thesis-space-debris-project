@@ -38,7 +38,7 @@ class Autoencoder(nn.Module):
 
         #CBAM
 
-        self.channelAttention = ChannelAttention(128, 16)
+        self.channelAttention = ChannelAttention(128, 8)
         self.spatialAttention = SpatialAttention()
 
         # Decoder
