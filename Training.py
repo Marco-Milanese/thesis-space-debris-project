@@ -8,12 +8,12 @@ import os
 
 
 # Select the gpu if available
-if 'COLAB_TPU_ADDR' in os.environ:
+try:
     print("TPU available")
     import torch_xla
     import torch_xla.core.xla_model as xm
     device = xm.xla_device()
-else:
+except:
     print("No TPU detected, using GPU if available")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
