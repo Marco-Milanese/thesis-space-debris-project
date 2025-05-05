@@ -55,20 +55,14 @@ class Autoencoder(nn.Module):
         min=spAtt.min()
         max=spAtt.max()
         print(f'\n Spatial Attention 1 Min-Max: {min}  -  {max} \n')
+        #to_pil_image = ToPILImage()
+        #mask = to_pil_image(spAtt[0].cpu().squeeze(0))
+        #mask.show()
         x = spAtt * x
         # fist skip connection
         skip1 = x
         x = F.relu(self.enc1(x))
        
-        chAtt = self.channelAttention1(x)
-        x = chAtt * x
-        spAtt = self.spatialAttention(x)
-        min=spAtt.min()
-        max=spAtt.max()
-        print(f'\n Spatial Attention 2 Min-Max: {min}  -  {max} \n')
-        #to_pil_image = ToPILImage()
-        #mask = to_pil_image(spAtt[0].cpu().squeeze(0))
-        #mask.show()
         x = spAtt * x
         # second skip connection
         skip2 = x
@@ -79,16 +73,28 @@ class Autoencoder(nn.Module):
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
         max=spAtt.max()
-        print(f'\n Spatial Attention 3 Min-Max: {min}  -  {max} \n')
+        print(f'\n Spatial Attention 2 Min-Max: {min}  -  {max} \n')
 
         x = F.relu(self.dec1(x))
        
         # second skip connection
         x = x + skip2
+        chAtt = self.channelAttention2(x)
+        x = chAtt * x
+        spAtt = self.spatialAttention(x)
+        min=spAtt.min()
+        max=spAtt.max()
+        print(f'\n Spatial Attention 3 Min-Max: {min}  -  {max} \n')
         x = F.relu(self.dec2(x))
         
         # first skip connection
         x = x + skip1
+        chAtt = self.channelAttention2(x)
+        x = chAtt * x
+        spAtt = self.spatialAttention(x)
+        min=spAtt.min()
+        max=spAtt.max()
+        print(f'\n Spatial Attention 4 Min-Max: {min}  -  {max} \n')
         x = self.outputLayer(x)
        
         return x
