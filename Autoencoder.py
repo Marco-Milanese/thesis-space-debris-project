@@ -35,7 +35,8 @@ class Autoencoder(nn.Module):
 
         #CBAM
 
-        self.channelAttention = ChannelAttention(64, 8)
+        self.channelAttention1 = ChannelAttention(64, 8)
+        self.channelAttention2 = ChannelAttention(128, 8)
         self.spatialAttention = SpatialAttention()
 
         # Decoder
@@ -59,7 +60,7 @@ class Autoencoder(nn.Module):
         skip1 = x
         x = F.relu(self.enc1(x))
        
-        chAtt = self.channelAttention(x)
+        chAtt = self.channelAttention1(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
@@ -73,7 +74,7 @@ class Autoencoder(nn.Module):
         skip2 = x
         x = F.relu(self.enc2(x))
 
-        chAtt = self.channelAttention(x)
+        chAtt = self.channelAttention2(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
