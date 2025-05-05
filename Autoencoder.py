@@ -64,7 +64,6 @@ class Autoencoder(nn.Module):
         skip1 = x
         x = F.relu(self.enc1(x))
        
-        x = spAtt * x
         # second skip connection
         skip2 = x
         x = F.relu(self.enc2(x))
