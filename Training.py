@@ -5,6 +5,7 @@ import torch.nn as nn
 from Autoencoder import Autoencoder
 from torchvision.transforms import ToPILImage
 import os
+from pytorch_msssim import ssim
 
 
 # Select the gpu if available
@@ -50,7 +51,10 @@ else:
     print('No pre-trained model')
     
 # Defining the loss function and optimizer
-lossFunction = nn.MSELoss()
+mseLoss = nn.MSELoss()
+# weight for the MSE loss
+alfa = 0.8 
+
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99)) # Adam optimizer with the specified betas and learning rate
 
 for epoch in range(epochs):
@@ -70,15 +74,16 @@ for epoch in range(epochs):
         # Forward pass
         #print("Forward pass")
         outputs = model(lowResImages)
-        loss = lossFunction(outputs, hiResImages)
-
+        mse = mseLoss(outputs, hiResImages)
+        ssimVal = 1 - ssim(outputs, hiResImages, data_range=1, size_average=True)
+        trainLoss = alfa * mse + (1 - alfa) * ssimVal
         # Backward pass and optimization
         #print("Backward pass")
         optimizer.zero_grad()
-        loss.backward()
+        trainLoss.backward()
         #print("Optimizer step")
-        #optimizer.step()
-        xm.optimizer_step(optimizer)
+        optimizer.step()
+        #xm.optimizer_step(optimizer)
 
     # Validation phase to prevent overfitting
     model.eval()
@@ -91,7 +96,9 @@ for epoch in range(epochs):
 
             # Forward pass
             outputs = model(lowResImages)
-            valLoss = valLoss + lossFunction(outputs, hiResImages).item()
+            mse = mseLoss(outputs, hiResImages)
+            ssimVal = 1 - ssim(outputs, hiResImages, data_range=1, size_average=True)
+            valLoss = alfa * mse + (1 - alfa) * ssimVal
     
     torch.save(model.state_dict(), 'Autoencoder.pth')
 
@@ -101,13 +108,15 @@ for epoch in range(epochs):
     os.system('git push -u origin main')
 
 
-    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {loss.item()/len(trainDataLoader):.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
+    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLoss.item():.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
 
 # Display the output of the last validation batch
-"""to_pil_image = ToPILImage()
+"""
+to_pil_image = ToPILImage()
 
 finalInput = to_pil_image(hiResImages[0].cpu().squeeze(0))  
 finalGenerated = to_pil_image(outputs[0].cpu().squeeze(0)) 
 
 finalGenerated.show()
-finalInput.show()"""
+finalInput.show()
+"""
