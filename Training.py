@@ -57,6 +57,7 @@ mseLoss = nn.MSELoss()
 alfa = 0.8 
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99)) # Adam optimizer with the specified betas and learning rate
+trainLossSum = 0.0
 
 for epoch in range(epochs):
     # Training phase
@@ -77,7 +78,8 @@ for epoch in range(epochs):
         outputs = model(lowResImages)
         mse = mseLoss(outputs, hiResImages)
         ssimVal = 1 - ssim(outputs, hiResImages, data_range=1, size_average=True)
-        trainLoss = alfa * mse + (1 - alfa) * ssimVal
+        trainLoss = alfa * mse + ssimVal
+        trainLossSum = trainLossSum + trainLoss
         # Backward pass and optimization
         #print("Backward pass")
         optimizer.zero_grad()
@@ -99,7 +101,7 @@ for epoch in range(epochs):
             outputs = model(lowResImages)
             mse = mseLoss(outputs, hiResImages)
             ssimVal = 1 - ssim(outputs, hiResImages, data_range=1, size_average=True)
-            valLoss = alfa * mse + (1 - alfa) * ssimVal
+            valLoss = alfa * mse + ssimVal
     
     torch.save(model.state_dict(), 'Autoencoder.pth')
 
@@ -110,7 +112,7 @@ for epoch in range(epochs):
     os.system('git push -u origin main')
 
 
-    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLoss.item():.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
+    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLossSum/batch_size:.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
 
 # Display the output of the last validation batch
 """
