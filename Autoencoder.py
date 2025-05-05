@@ -78,12 +78,12 @@ class Autoencoder(nn.Module):
         #print('\n Decoder 1: \n')
         #print(x.shape)
         # second skip connection
-        x = x + skip2
+        """x = x + skip2"""
         x = F.relu(self.dec2(x))
         #print('\n Decoder 2: \n')
         #print(x.shape)
         # first skip connection
-        x = x + skip1
+        """x = x + skip1"""
         x = self.outputLayer(x)
         #print('\n Output Layer: \n ')
         #print(x.shape)
