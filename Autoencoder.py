@@ -70,31 +70,26 @@ class Autoencoder(nn.Module):
 
         chAtt = self.channelAttention1(x)
         x = chAtt * x
-        spAtt = self.spatialAttention(x)
-        min=spAtt.min()
-        max=spAtt.max()
-        print(f'\n Spatial Attention 2 Min-Max: {min}  -  {max} \n')
+        chMin = chAtt.min()
+        chMax = chAtt.max()
+        print(f'\n Channel Attention 1 Min-Max: {chMin}  -  {chMax} \n')
 
         x = F.relu(self.dec1(x))
        
         # second skip connection
         x = x + skip2
-        chAtt = self.channelAttention2(x)
-        x = chAtt * x
-        spAtt = self.spatialAttention(x)
-        min=spAtt.min()
-        max=spAtt.max()
-        print(f'\n Spatial Attention 3 Min-Max: {min}  -  {max} \n')
         x = F.relu(self.dec2(x))
-        
         # first skip connection
         x = x + skip1
         chAtt = self.channelAttention3(x)
+        chMin = chAtt.min()
+        chMax = chAtt.max()
+        print(f'\n Channel Attention 2 Min-Max: {chMin}  -  {chMax} \n')
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
         max=spAtt.max()
-        print(f'\n Spatial Attention 4 Min-Max: {min}  -  {max} \n')
+        print(f'\n Spatial Attention 2 Min-Max: {min}  -  {max} \n')
         x = self.outputLayer(x)
        
         return x
