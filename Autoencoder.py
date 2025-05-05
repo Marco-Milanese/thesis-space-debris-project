@@ -68,7 +68,7 @@ class Autoencoder(nn.Module):
         skip2 = x
         x = F.relu(self.enc2(x))
 
-        chAtt = self.channelAttention2(x)
+        chAtt = self.channelAttention1(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
