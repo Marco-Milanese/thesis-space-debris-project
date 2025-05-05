@@ -48,22 +48,23 @@ class Autoencoder(nn.Module):
         # Used ReLU activation function as specified in the paper
         # Added skip connections as specified in the network diagram
 
-        #print('\n Input Image: \n')
-        #print(x.shape)
+       
         x = F.relu(self.inputLayer(x))
-        #print('\n Input Layer: \n')
-        #print(x.shape)
+        spAtt = self.spatialAttention(x)
+        min=spAtt.min()
+        max=spAtt.max()
+        print(f'\n Spatial Attention 1 Min-Max: {min}  -  {max} \n')
+        x = spAtt * x
         # fist skip connection
         skip1 = x
         x = F.relu(self.enc1(x))
-        #print('\n Encoder 1:  \n')
-        #print(x.shape)
+       
         chAtt = self.channelAttention(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
         max=spAtt.max()
-        print(f'\n Spatial Attention Min-Max: {min}  -  {max} \n')
+        print(f'\n Spatial Attention 2 Min-Max: {min}  -  {max} \n')
         #to_pil_image = ToPILImage()
         #mask = to_pil_image(spAtt[0].cpu().squeeze(0))
         #mask.show()
@@ -71,20 +72,22 @@ class Autoencoder(nn.Module):
         # second skip connection
         skip2 = x
         x = F.relu(self.enc2(x))
-        #print('\n Encoder 2: \n')
-        #print(x.shape)
+
+        chAtt = self.channelAttention(x)
+        x = chAtt * x
+        spAtt = self.spatialAttention(x)
+        min=spAtt.min()
+        max=spAtt.max()
+        print(f'\n Spatial Attention 3 Min-Max: {min}  -  {max} \n')
 
         x = F.relu(self.dec1(x))
-        #print('\n Decoder 1: \n')
-        #print(x.shape)
+       
         # second skip connection
-        """x = x + skip2"""
+        x = x + skip2
         x = F.relu(self.dec2(x))
-        #print('\n Decoder 2: \n')
-        #print(x.shape)
+        
         # first skip connection
-        """x = x + skip1"""
+        x = x + skip1
         x = self.outputLayer(x)
-        #print('\n Output Layer: \n ')
-        #print(x.shape)
+       
         return x
