@@ -37,6 +37,7 @@ class Autoencoder(nn.Module):
 
         self.channelAttention1 = ChannelAttention(64, 8)
         self.channelAttention2 = ChannelAttention(128, 8)
+        self.channelAttention3 = ChannelAttention(32, 8)
         self.spatialAttention = SpatialAttention()
 
         # Decoder
@@ -79,7 +80,7 @@ class Autoencoder(nn.Module):
        
         # second skip connection
         x = x + skip2
-        chAtt = self.channelAttention2(x)
+        chAtt = self.channelAttention1(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
@@ -89,7 +90,7 @@ class Autoencoder(nn.Module):
         
         # first skip connection
         x = x + skip1
-        chAtt = self.channelAttention2(x)
+        chAtt = self.channelAttention3(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
