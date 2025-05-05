@@ -6,14 +6,15 @@ from Autoencoder import Autoencoder
 from torchvision.transforms import ToPILImage
 import os
 from pytorch_msssim import ssim
+from datetime import datetime
 
 
 # Select the gpu if available
 try:
-    print("TPU available")
     import torch_xla
     import torch_xla.core.xla_model as xm
     device = xm.xla_device()
+    print("TPU available")
 except:
     print("No TPU detected, using GPU if available")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -104,7 +105,8 @@ for epoch in range(epochs):
 
     # Auto saving of the model during Colab training
     os.system('git add Autoencoder.pth')
-    os.system('git commit Autoencoder.pth -m "AutoSave of the model during training"')
+    current_time = datetime.now().strftime("%A, %d %B %Y")
+    os.system(f'git commit Autoencoder.pth -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs}, Batch {batchNumber}/{totalBatch} - {current_time}"')
     os.system('git push -u origin main')
 
 
