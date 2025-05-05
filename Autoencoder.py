@@ -35,8 +35,8 @@ class Autoencoder(nn.Module):
 
         #CBAM
 
-        self.channelAttention1 = ChannelAttention(64, 8)
-        self.channelAttention2 = ChannelAttention(128, 8)
+        self.channelAttention1 = ChannelAttention(128, 8)
+        self.channelAttention2 = ChannelAttention(64, 8)
         self.channelAttention3 = ChannelAttention(32, 8)
         self.spatialAttention = SpatialAttention()
 
@@ -80,7 +80,7 @@ class Autoencoder(nn.Module):
        
         # second skip connection
         x = x + skip2
-        chAtt = self.channelAttention1(x)
+        chAtt = self.channelAttention2(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         min=spAtt.min()
