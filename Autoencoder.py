@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.nn.functional as F
 from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention
+from torchvision.transforms import ToPILImage
 
 
 #256x256x3-->256x256x64-->128x128x128-->64x64x256
@@ -14,10 +15,6 @@ from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention
 
 # The channels have been reduced from 3 to 1, since the input images are grayscale
 # The output layer now has 512x512x1 since the model will generate images with twice the resolution of the input
-
-
-
-
 
 # Used ((W-F+2P)/S)+1 to calculate the filter size of each layer based on the dimensions
 # W = input size, F = filter size, P = padding, S = stride
@@ -38,7 +35,7 @@ class Autoencoder(nn.Module):
 
         #CBAM
 
-        self.channelAttention = ChannelAttention(128, 8)
+        self.channelAttention = ChannelAttention(64, 8)
         self.spatialAttention = SpatialAttention()
 
         # Decoder
@@ -61,13 +58,22 @@ class Autoencoder(nn.Module):
         x = F.relu(self.enc1(x))
         #print('\n Encoder 1:  \n')
         #print(x.shape)
+        chAtt = self.channelAttention(x)
+        x = chAtt * x
+        spAtt = self.spatialAttention(x)
+        min=spAtt.min()
+        max=spAtt.max()
+        print(f'\n Spatial Attention Min-Max: {min}  -  {max} \n')
+        #to_pil_image = ToPILImage()
+        #mask = to_pil_image(spAtt[0].cpu().squeeze(0))
+        #mask.show()
+        x = spAtt * x
         # second skip connection
         skip2 = x
         x = F.relu(self.enc2(x))
         #print('\n Encoder 2: \n')
         #print(x.shape)
-        x = self.channelAttention(x) * x
-        x = self.spatialAttention(x) * x
+
         x = F.relu(self.dec1(x))
         #print('\n Decoder 1: \n')
         #print(x.shape)
