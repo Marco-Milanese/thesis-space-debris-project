@@ -52,9 +52,7 @@ class Autoencoder(nn.Module):
 
         #CBAM
 
-        self.channelAttention1 = ChannelAttention(128, 8)
-        self.channelAttention2 = ChannelAttention(64, 8)
-        self.channelAttention3 = ChannelAttention(32, 8)
+        self.channelAttention = ChannelAttention(128, 8)
         self.spatialAttention = SpatialAttention()
 
         # Decoder
@@ -67,13 +65,6 @@ class Autoencoder(nn.Module):
         # Used ReLU activation function as specified in the paper
         # Added skip connections as specified in the network diagram
 
-        spAtt1 = self.spatialAttention(x, 2)
-        threshold = spAtt1.mean() + 0.35 * (spAtt1.max() - spAtt1.mean())
-        bias = 0.2
-        spAtt1Hard = bias + ((spAtt1 > threshold).float()) * (1 - bias)
-        gaussSpAttHard = gaussian_blur(spAtt1Hard, kernel_size=7)
-        x = gaussSpAttHard * x
-        
         x = F.relu(self.inputLayer(x))
 
         # fist skip connection
@@ -84,15 +75,20 @@ class Autoencoder(nn.Module):
         skip2 = x
         x = F.relu(self.enc2(x))
 
-        chAtt = self.channelAttention1(x)
+
+        chAtt = self.channelAttention(x)
         x = chAtt * x
+        spAtt = self.spatialAttention(x)
+        x = spAtt * x
 
         x = F.relu(self.dec1(x))
        
         # second skip connection
         x = x + skip2
         x = F.relu(self.dec2(x))
+
         # first skip connection
         x = x + skip1
         x = self.outputLayer(x)
+        
         return x
