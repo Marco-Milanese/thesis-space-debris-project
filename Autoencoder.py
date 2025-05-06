@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention
 from torchvision.transforms import ToPILImage
+from torchvision.transforms.functional import gaussian_blur
 
 
 
@@ -64,12 +65,16 @@ class Autoencoder(nn.Module):
         # Used ReLU activation function as specified in the paper
         # Added skip connections as specified in the network diagram
 
+        gaussSpAtt = self.spatialAttention(x)
+        x = x + gaussSpAtt * gaussian_blur(x, kernel_size=7, sigma=(0.1, 2.0))
+        AttentionInfo(0, gaussSpAtt, None, False)
         x = F.relu(self.inputLayer(x))
         chAtt = self.channelAttention3(x)
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         x = spAtt * x
         AttentionInfo(1, spAtt, chAtt, False)
+
         # fist skip connection
         skip1 = x
         x = F.relu(self.enc1(x))

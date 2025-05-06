@@ -5,7 +5,6 @@ import torch.nn as nn
 from Autoencoder import Autoencoder
 from torchvision.transforms import ToPILImage
 import os
-from pytorch_msssim import ssim
 from datetime import datetime
 
 
