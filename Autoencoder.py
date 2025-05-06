@@ -95,6 +95,6 @@ class Autoencoder(nn.Module):
         x = F.relu(self.dec2(x))
         # first skip connection
         x = x + skip1
-        x = self.outputLayer(x)
+        x = F.sigmoid(self.outputLayer(x))
        
         return x
