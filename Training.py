@@ -94,7 +94,8 @@ for epoch in range(epochs):
 
             # Forward pass
             outputs = model(lowResImages)
-            valLoss = lossFunction(outputs, hiResImages)
+            outMin = outputs.min()
+            valLoss = lossFunction(outputs, hiResImages) + abs(outMin) 
             valLossSum = valLossSum + valLoss
     
     torch.save(model.state_dict(), 'Autoencoder.pth')
