@@ -22,12 +22,14 @@ from torchvision.transforms.functional import gaussian_blur
 # W = input size, F = filter size, P = padding, S = stride
 
 def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False):
-    spMin = spAttMask.min()
-    spMax = spAttMask.max()
-    chMin = chAttMask.min()
-    chMax = chAttMask.max()
-    if spAttMask != None: print(f'\n Spatial Attention {index} Min-Max: {spMin}  -  {spMax} \n')
-    if chAttMask != None: print(f'\n Channel Attention {index} Min-Max: {chMin}  -  {chMax} \n')
+    if spAttMask != None:
+        spMin = spAttMask.min()
+        spMax = spAttMask.max()
+        print(f'\n Spatial Attention {index} Min-Max: {spMin}  -  {spMax} \n')
+    if chAttMask != None:
+        chMin = chAttMask.min()
+        chMax = chAttMask.max()
+        print(f'\n Channel Attention {index} Min-Max: {chMin}  -  {chMax} \n')
     if show:
         to_pil_image = ToPILImage()
         mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
