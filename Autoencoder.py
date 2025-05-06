@@ -42,10 +42,10 @@ class Autoencoder(nn.Module):
         super(Autoencoder, self).__init__()
 
         # Encoder
-        #self.inputLayer = nn.Conv2d(1, 32, kernel_size=1, stride=1, padding=0)
+        self.inputLayer = nn.Conv2d(1, 32, kernel_size=1, stride=1, padding=0)
 
         # Trying a bigger kernel size to reduce the noise in the generated image
-        self.inputLayer = nn.Conv2d(1, 32, kernel_size=7, stride=1, padding=3)
+        #self.inputLayer = nn.Conv2d(1, 32, kernel_size=7, stride=1, padding=3)
 
         self.enc1 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)
         self.enc2 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1)
@@ -72,9 +72,8 @@ class Autoencoder(nn.Module):
         bias = 0.2
         spAtt1Hard = bias + ((spAtt1 > threshold).float()) * (1 - bias)
         gaussSpAttHard = gaussian_blur(spAtt1Hard, kernel_size=7)
-        x = spAtt1Hard * x
+        x = gaussSpAttHard * x
         
-        AttentionInfo(0, spAtt1, None, False)
         x = F.relu(self.inputLayer(x))
 
         # fist skip connection
@@ -95,6 +94,5 @@ class Autoencoder(nn.Module):
         x = F.relu(self.dec2(x))
         # first skip connection
         x = x + skip1
-        x = F.relu(self.outputLayer(x))
-        print(f'Output Min: {x.min()} - Max: {x.max()}')
+        x = self.outputLayer(x)
         return x
