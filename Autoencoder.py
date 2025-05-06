@@ -69,6 +69,7 @@ class Autoencoder(nn.Module):
         x = chAtt * x
         spAtt = self.spatialAttention(x)
         x = spAtt * x
+        AttentionInfo(1, spAtt, chAtt, False)
         # fist skip connection
         skip1 = x
         x = F.relu(self.enc1(x))
