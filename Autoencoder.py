@@ -78,7 +78,7 @@ class Autoencoder(nn.Module):
 
         chAtt = self.channelAttention(x)
         x = chAtt * x
-        spAtt = self.spatialAttention(x)
+        spAtt = self.spatialAttention(x, 3)
         x = spAtt * x
 
         x = F.relu(self.dec1(x))
