@@ -25,11 +25,11 @@ def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False):
     if spAttMask != None:
         spMin = spAttMask.min()
         spMax = spAttMask.max()
-        print(f'\n Spatial Attention {index} Min-Max: {spMin}  -  {spMax} \n')
+        print(f'Spatial Attention {index} Min-Max: {spMin}  -  {spMax} ')
     if chAttMask != None:
         chMin = chAttMask.min()
         chMax = chAttMask.max()
-        print(f'\n Channel Attention {index} Min-Max: {chMin}  -  {chMax} \n')
+        print(f'Channel Attention {index} Min-Max: {chMin}  -  {chMax} ')
     if show:
         to_pil_image = ToPILImage()
         mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
@@ -68,13 +68,13 @@ class Autoencoder(nn.Module):
         # Added skip connections as specified in the network diagram
 
         spAtt1 = self.spatialAttention(x, 2)
-        threshold = spAtt1.mean() + 0.25 * (spAtt1.max() - spAtt1.mean())
-        bias = 0.25
+        threshold = spAtt1.mean() + 0.35 * (spAtt1.max() - spAtt1.mean())
+        bias = 0.2
         spAtt1Hard = bias + ((spAtt1 > threshold).float()) * (1 - bias)
         gaussSpAttHard = gaussian_blur(spAtt1Hard, kernel_size=7)
         x = spAtt1Hard * x
         
-        AttentionInfo(0, gaussSpAttHard, None, True)
+        AttentionInfo(0, spAtt1, None, False)
         x = F.relu(self.inputLayer(x))
 
         # fist skip connection
@@ -95,6 +95,6 @@ class Autoencoder(nn.Module):
         x = F.relu(self.dec2(x))
         # first skip connection
         x = x + skip1
-        x = F.sigmoid(self.outputLayer(x))
-       
+        x = F.relu(self.outputLayer(x))
+        print(f'Output Min: {x.min()} - Max: {x.max()}')
         return x
