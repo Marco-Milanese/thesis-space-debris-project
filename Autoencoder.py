@@ -67,8 +67,10 @@ class Autoencoder(nn.Module):
         # Used ReLU activation function as specified in the paper
         # Added skip connections as specified in the network diagram
 
-        gaussSpAtt = self.spatialAttention(x)
-        x = x + gaussSpAtt * gaussian_blur(x, kernel_size=7, sigma=(0.1, 2.0))
+        SpAtt = self.spatialAttention(x)
+        gaussSpAtt = 1 - SpAtt
+        x = SpAtt * x + gaussSpAtt * gaussian_blur(x, kernel_size=11)
+        
         AttentionInfo(0, gaussSpAtt, None, False)
         x = F.relu(self.inputLayer(x))
         chAtt = self.channelAttention3(x)
