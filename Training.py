@@ -73,7 +73,8 @@ for epoch in range(epochs):
         #print("Forward pass")
         outputs = model(lowResImages)
         outMin = outputs.min()
-        trainLoss = lossFunction(outputs, hiResImages) + abs(outMin) 
+        outMax = outputs.max()
+        trainLoss = lossFunction(outputs, hiResImages) + abs(outMin) + abs(1 - outMax) 
         trainLossSum = trainLossSum + trainLoss
         # Backward pass and optimization
         #print("Backward pass")
