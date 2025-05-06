@@ -7,6 +7,7 @@ from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention
 from torchvision.transforms import ToPILImage
 
 
+
 #256x256x3-->256x256x64-->128x128x128-->64x64x256
 
 # New Layer Dimensions:
@@ -18,6 +19,19 @@ from torchvision.transforms import ToPILImage
 
 # Used ((W-F+2P)/S)+1 to calculate the filter size of each layer based on the dimensions
 # W = input size, F = filter size, P = padding, S = stride
+
+def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False):
+    spMin = spAttMask.min()
+    spMax = spAttMask.max()
+    chMin = chAttMask.min()
+    chMax = chAttMask.max()
+    if spAttMask != None: print(f'\n Spatial Attention {index} Min-Max: {spMin}  -  {spMax} \n')
+    if chAttMask != None: print(f'\n Channel Attention {index} Min-Max: {chMin}  -  {chMax} \n')
+    if show:
+        to_pil_image = ToPILImage()
+        mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
+        mask.show()
+
 
 class Autoencoder(nn.Module):
 
@@ -50,15 +64,10 @@ class Autoencoder(nn.Module):
         # Used ReLU activation function as specified in the paper
         # Added skip connections as specified in the network diagram
 
-       
         x = F.relu(self.inputLayer(x))
+        chAtt = self.channelAttention3(x)
+        x = chAtt * x
         spAtt = self.spatialAttention(x)
-        min=spAtt.min()
-        max=spAtt.max()
-        print(f'\n Spatial Attention 1 Min-Max: {min}  -  {max} \n')
-        #to_pil_image = ToPILImage()
-        #mask = to_pil_image(spAtt[0].cpu().squeeze(0))
-        #mask.show()
         x = spAtt * x
         # fist skip connection
         skip1 = x
@@ -70,9 +79,6 @@ class Autoencoder(nn.Module):
 
         chAtt = self.channelAttention1(x)
         x = chAtt * x
-        chMin = chAtt.min()
-        chMax = chAtt.max()
-        print(f'\n Channel Attention 1 Min-Max: {chMin}  -  {chMax} \n')
 
         x = F.relu(self.dec1(x))
        
@@ -82,14 +88,9 @@ class Autoencoder(nn.Module):
         # first skip connection
         x = x + skip1
         chAtt = self.channelAttention3(x)
-        chMin = chAtt.min()
-        chMax = chAtt.max()
-        print(f'\n Channel Attention 2 Min-Max: {chMin}  -  {chMax} \n')
         x = chAtt * x
         spAtt = self.spatialAttention(x)
-        min=spAtt.min()
-        max=spAtt.max()
-        print(f'\n Spatial Attention 2 Min-Max: {min}  -  {max} \n')
+        x = spAtt * x
         x = self.outputLayer(x)
        
         return x

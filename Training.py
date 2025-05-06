@@ -30,7 +30,7 @@ ValSet = SpaceDebrisDataset('./data/val.csv', './data/LowResVal1ch', './data/Val
 ValLen = len(ValSet)
 print(f'Validation set size: {ValLen}')
 
-batch_size = 264 # batch size chosen as 2^8 good for Colab GPU memory
+batch_size = 128 # batch size chosen as 2^7, good for Colab GPU memory
 epochs = 10
 
 #test
@@ -52,10 +52,7 @@ else:
     print('No pre-trained model')
     
 # Defining the loss function and optimizer
-mseLoss = nn.MSELoss()
-# weight for the MSE loss
-alfa = 0.8 
-
+lossFunction = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99)) # Adam optimizer with the specified betas and learning rate
 trainLossSum = 0.0
 
@@ -76,9 +73,7 @@ for epoch in range(epochs):
         # Forward pass
         #print("Forward pass")
         outputs = model(lowResImages)
-        mse = mseLoss(outputs, hiResImages)
-        ssimVal = 1 - ssim(outputs, hiResImages, data_range=1, size_average=True)
-        trainLoss = alfa * mse + ssimVal
+        trainLoss = lossFunction(outputs, hiResImages)
         trainLossSum = trainLossSum + trainLoss
         # Backward pass and optimization
         #print("Backward pass")
@@ -91,7 +86,7 @@ for epoch in range(epochs):
     # Validation phase to prevent overfitting
     model.eval()
     with torch.no_grad():
-        valLoss = 0.0
+        valLossSum = 0.0
         for data in valDataLoader:
             lowResImages, hiResImages = data
             lowResImages = lowResImages.to(device)
@@ -99,9 +94,8 @@ for epoch in range(epochs):
 
             # Forward pass
             outputs = model(lowResImages)
-            mse = mseLoss(outputs, hiResImages)
-            ssimVal = 1 - ssim(outputs, hiResImages, data_range=1, size_average=True)
-            valLoss = alfa * mse + ssimVal
+            valLoss = lossFunction(outputs, hiResImages)
+            valLossSum = valLossSum + valLoss
     
     torch.save(model.state_dict(), 'Autoencoder.pth')
 
@@ -111,8 +105,7 @@ for epoch in range(epochs):
     os.system(f'git commit Autoencoder.pth -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs}, Batch {batchNumber}/{totalBatch} - {current_time}"')
     os.system('git push -u origin main')
 
-
-    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLossSum/batch_size:.4f}, Validation Loss: {valLoss/len(valDataLoader):.4f}")
+    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLossSum/len(trainDataLoader):.4f}, Validation Loss: {valLossSum/len(valDataLoader):.4f}")
 
 # Display the output of the last validation batch
 """

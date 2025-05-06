@@ -29,14 +29,11 @@ class SpatialAttention(nn.Module):
         self.conv = nn.Conv2d(2, 1, kernel_size=kernelSize, stride=1, padding=(kernelSize-1)//2, bias=False)
 
     def forward(self, x):
-        x1Shape = x.shape
         avg = torch.mean(x, dim=1, keepdim=True)
         max = torch.max(x, dim=1, keepdim=True).values
-        avgShape = avg.shape
-        maxShape = max.shape   
         x = torch.cat([avg, max], dim=1)
-        xShape = x.shape
         x = self.conv(x)
-        x = torch.sigmoid(x)
+        sigTemp = 10
+        x = torch.sigmoid((x - 0.5) * sigTemp)
 
         return x
