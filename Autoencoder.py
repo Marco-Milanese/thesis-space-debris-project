@@ -1,45 +1,12 @@
-from Dataset import SpaceDebrisDataset
-import torch
-from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.nn.functional as F
-from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention
-from torchvision.transforms import ToPILImage
-from torchvision.transforms.functional import gaussian_blur
-import os
+from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention, AttentionInfo
 
 
-
-#256x256x3-->256x256x64-->128x128x128-->64x64x256
 
 # New Layer Dimensions:
 # Encoder: 256x256x1-->256x256x32-->128x128x64-->64x64x128
 # Decoder: 64x64x128-->128x128x64-->256x256x32-->512x512x1
-
-# The channels have been reduced from 3 to 1, since the input images are grayscale
-# The output layer now has 512x512x1 since the model will generate images with twice the resolution of the input
-
-# Used ((W-F+2P)/S)+1 to calculate the filter size of each layer based on the dimensions
-# W = input size, F = filter size, P = padding, S = stride
-
-def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False, saveName = None):
-    if spAttMask != None:
-        spMin = spAttMask.min()
-        spMax = spAttMask.max()
-        print(f'Spatial Attention {index} Min-Max: {spMin}  -  {spMax} ')
-    if chAttMask != None:
-        chMin = chAttMask.min()
-        chMax = chAttMask.max()
-        print(f'Channel Attention {index} Min-Max: {chMin}  -  {chMax} ')
-    if show:
-        to_pil_image = ToPILImage()
-        mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
-        mask.show()
-    if saveName != None: 
-        to_pil_image = ToPILImage()
-        mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
-        mask.save(os.path.join('./AttentionMasks', f"{saveName}.jpg"))
-
 
 class Autoencoder(nn.Module):
 

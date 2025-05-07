@@ -1,7 +1,27 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision.transforms import ToPILImage
+import os
 
+
+def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False, saveName = None):
+    if spAttMask != None:
+        spMin = spAttMask.min()
+        spMax = spAttMask.max()
+        print(f'Spatial Attention {index} Min-Max: {spMin}  -  {spMax} ')
+    if chAttMask != None:
+        chMin = chAttMask.min()
+        chMax = chAttMask.max()
+        print(f'Channel Attention {index} Min-Max: {chMin}  -  {chMax} ')
+    if show:
+        to_pil_image = ToPILImage()
+        mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
+        mask.show()
+    if saveName != None: 
+        to_pil_image = ToPILImage()
+        mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
+        mask.save(os.path.join('./AttentionMasks', f"{saveName}.jpg"))
 class ChannelAttention(nn.Module):
     def __init__(self, inChannels, redRatio):
         super(ChannelAttention, self).__init__()
