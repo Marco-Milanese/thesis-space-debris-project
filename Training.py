@@ -74,7 +74,8 @@ for epoch in range(epochs):
         outputs = model(lowResImages)
         outMin = outputs.min()
         outMax = outputs.max()
-        trainLoss = lossFunction(outputs, hiResImages) + abs(outMin) + abs(1 - outMax) 
+        trainLoss = lossFunction(outputs, hiResImages) 
+        #+ abs(outMin) + abs(1 - outMax) 
         trainLossSum = trainLossSum + trainLoss
         # Backward pass and optimization
         #print("Backward pass")
@@ -96,7 +97,9 @@ for epoch in range(epochs):
             # Forward pass
             outputs = model(lowResImages)
             outMin = outputs.min()
-            valLoss = lossFunction(outputs, hiResImages) + abs(outMin) 
+            outMax = outputs.max()
+            valLoss = lossFunction(outputs, hiResImages)
+            #+ abs(outMin) + abs(1 - outMax)
             valLossSum = valLossSum + valLoss
     
     torch.save(model.state_dict(), 'Autoencoder.pth')
