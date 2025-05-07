@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from ConvolutionalBlockAttentionModule import ChannelAttention, SpatialAttention
 from torchvision.transforms import ToPILImage
 from torchvision.transforms.functional import gaussian_blur
+import os
 
 
 
@@ -21,7 +22,7 @@ from torchvision.transforms.functional import gaussian_blur
 # Used ((W-F+2P)/S)+1 to calculate the filter size of each layer based on the dimensions
 # W = input size, F = filter size, P = padding, S = stride
 
-def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False):
+def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False, saveName = None):
     if spAttMask != None:
         spMin = spAttMask.min()
         spMax = spAttMask.max()
@@ -34,6 +35,10 @@ def AttentionInfo(index, spAttMask = None, chAttMask = None, show = False):
         to_pil_image = ToPILImage()
         mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
         mask.show()
+    if saveName != None: 
+        to_pil_image = ToPILImage()
+        mask = to_pil_image(spAttMask[0].cpu().squeeze(0))
+        mask.save(os.path.join('./AttentionMasks', f"{saveName}.jpg"))
 
 
 class Autoencoder(nn.Module):
@@ -80,7 +85,7 @@ class Autoencoder(nn.Module):
         x = chAtt * x
         spAtt = self.spatialAttention(x, 3)
         x = spAtt * x
-
+        AttentionInfo(1, spAtt, chAtt, True)
         x = F.relu(self.dec1(x))
        
         # second skip connection
