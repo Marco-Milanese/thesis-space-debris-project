@@ -3,9 +3,7 @@ from PIL import Image
 import os
 from torchvision.transforms import ToTensor, ToPILImage
 from Autoencoder import Autoencoder
-import pandas as pd
 import random
-import numpy as np
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

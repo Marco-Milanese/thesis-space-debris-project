@@ -3,21 +3,12 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from Autoencoder import Autoencoder
-from torchvision.transforms import ToPILImage
 import os
 from datetime import datetime
 
 
-# Select the gpu if available
-try:
-    import torch_xla
-    import torch_xla.core.xla_model as xm
-    device = xm.xla_device()
-    print("TPU available")
-except:
-    print("No TPU detected, using GPU if available")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+# Select the GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Load the Training and Validation datasets
@@ -31,10 +22,6 @@ print(f'Validation set size: {ValLen}')
 
 batch_size = 128 # batch size chosen as 2^7, good for Colab GPU memory
 epochs = 10
-
-#test
-#batch_size = 5
-#epochs = 1
 
 # Load the datasets into dataloaders
 trainDataLoader = DataLoader(TrainingSet, batch_size, shuffle=True)
@@ -52,7 +39,8 @@ else:
     
 # Defining the loss function and optimizer
 lossFunction = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99)) # Adam optimizer with the specified betas and learning rate
+# Adam optimizer with the specified betas and learning rate
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99))
 trainLossSum = 0.0
 
 for epoch in range(epochs):
@@ -63,27 +51,23 @@ for epoch in range(epochs):
         batchNumber += 1
         totalBatch = len(trainDataLoader)
         print(f"Epoch {epoch+1}/{epochs} Batch {batchNumber}/{totalBatch}")
-        #print('Training')
-        lowResImages, hiResImages = data 
+
         # Pushing the data to the available device
+        lowResImages, hiResImages = data 
         lowResImages = lowResImages.to(device) 
         hiResImages = hiResImages.to(device)
 
         # Forward pass
-        #print("Forward pass")
         outputs = model(lowResImages)
         outMin = outputs.min()
         outMax = outputs.max()
-        trainLoss = lossFunction(outputs, hiResImages) 
-        #+ abs(outMin) + abs(1 - outMax) 
+        trainLoss = lossFunction(outputs, hiResImages) + abs(outMin) + abs(1 - outMax) 
         trainLossSum = trainLossSum + trainLoss
+
         # Backward pass and optimization
-        #print("Backward pass")
         optimizer.zero_grad()
         trainLoss.backward()
-        #print("Optimizer step")
         optimizer.step()
-        #xm.optimizer_step(optimizer)
 
     # Validation phase to prevent overfitting
     model.eval()
@@ -98,8 +82,7 @@ for epoch in range(epochs):
             outputs = model(lowResImages)
             outMin = outputs.min()
             outMax = outputs.max()
-            valLoss = lossFunction(outputs, hiResImages)
-            #+ abs(outMin) + abs(1 - outMax)
+            valLoss = lossFunction(outputs, hiResImages) + abs(outMin) + abs(1 - outMax)
             valLossSum = valLossSum + valLoss
     
     torch.save(model.state_dict(), 'Autoencoder.pth')
@@ -111,14 +94,3 @@ for epoch in range(epochs):
     os.system('git push -u origin main')
 
     print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLossSum/len(trainDataLoader):.4f}, Validation Loss: {valLossSum/len(valDataLoader):.4f}")
-
-# Display the output of the last validation batch
-"""
-to_pil_image = ToPILImage()
-
-finalInput = to_pil_image(hiResImages[0].cpu().squeeze(0))  
-finalGenerated = to_pil_image(outputs[0].cpu().squeeze(0)) 
-
-finalGenerated.show()
-finalInput.show()
-"""
