@@ -1,5 +1,6 @@
 import torch
-from Autoencoder import Autoencoder
+from YoloAutoencoder import Autoencoder
+from YoloDataLoader import SpaceDebrisDataset
 import torch.nn as nn
 from torchvision.transforms import ToTensor
 from PIL import Image
@@ -7,7 +8,8 @@ from PIL import Image
 
 inputImage = ToTensor()(Image.open('./data/LowResTrain1ch/0.jpg'))
 outputImage = ToTensor()(Image.open('./data/Train1ch/0.jpg'))
-
+inputImage = inputImage.unsqueeze(0)  # Add batch dimension
+outputImage = outputImage.unsqueeze(0)  # Add batch dimension
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = Autoencoder().to(device)
@@ -19,5 +21,5 @@ inputImage = inputImage.to(device)
 outputImage = outputImage.to(device)
 
 outputs = model(inputImage)
-loss = lossFunction(outputs, outputImage)
+loss = lossFunction(outputs[0], outputImage)
 
