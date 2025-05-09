@@ -21,7 +21,7 @@ ValSet = SpaceDebrisDataset('./data/val.csv', './data/LowResVal1ch', './data/Val
 ValLen = len(ValSet)
 print(f'Validation set size: {ValLen}')
 
-batch_size = 64 # batch size chosen as 2^7, good for Colab GPU memory
+batch_size = 6 # batch size chosen as 2^7, good for Colab GPU memory
 epochs = 10
 
 # Load the datasets into dataloaders
@@ -30,7 +30,7 @@ valDataLoader = DataLoader(ValSet, batch_size, shuffle=True)
 model = Autoencoder().to(device)
 
 # Load the pre-trained model if available
-if os.path.exists('./YoloAutoencoder.pth'):
+if os.path.exists('./YoloAutoencoder4.pth'):
     print("Loading pre-trained model")
     model.load_state_dict(torch.load('./YoloAutoencoder.pth', map_location="cpu"))
     model.to(device)

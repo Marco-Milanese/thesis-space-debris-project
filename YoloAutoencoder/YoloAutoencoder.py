@@ -81,27 +81,29 @@ class Autoencoder(nn.Module):
         # Encoder
         x = self.enc1(x)
         # print("Shape after enc1:", x.shape)
+        skip1 = x
         x = self.enc2(x)
         # print("Shape after enc2:", x.shape)
         x = self.enc3(x)
+        skip2 = x
         # print("Shape after enc3:", x.shape)
         x = self.enc4(x)
         # print("Shape after enc4:", x.shape)
-        x = self.enc5(x)
+        xDec = self.enc5(x)
         # print("Shape after enc5:", x.shape)
 
         # Detection head
-        bboxes = self.detection(x)
+        bboxes = self.detection(xDec)
         # print("Shape after detection head:", bboxes.shape)
 
         # Decoder
-        x = self.dec1(x)
+        #x = self.dec1(x) + skip2
         # print("Shape after dec1:", x.shape)
-        x = self.dec2(x)
+        x = self.dec2(x) + skip2
         # print("Shape after dec2:", x.shape)
         x = self.dec3(x)
         # print("Shape after dec3:", x.shape)
-        x = self.dec4(x)
+        x = self.dec4(x) + skip1
         # print("Shape after dec4:", x.shape)
         x = self.dec5(x)
         # print("Shape after dec5:", x.shape)
