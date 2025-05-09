@@ -6,6 +6,7 @@ from YoloAutoencoder import Autoencoder
 import os
 from datetime import datetime
 from YoloLoss import YoloLoss
+from lossLogger import logLosses
 
 
 # Select the GPU if available
@@ -21,7 +22,7 @@ ValSet = SpaceDebrisDataset('./data/val.csv', './data/LowResVal1ch', './data/Val
 ValLen = len(ValSet)
 print(f'Validation set size: {ValLen}')
 
-batch_size = 6 # batch size chosen as 2^7, good for Colab GPU memory
+batch_size = 128 # batch size chosen as 2^7, good for Colab GPU memory
 epochs = 10
 
 # Load the datasets into dataloaders
@@ -63,8 +64,14 @@ for epoch in range(epochs):
         # Forward pass
         outputs = model(lowResImages)
         trainLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
-        print(f"Train Loss: {trainLoss}")
         trainLossSum = trainLossSum + trainLoss
+
+        trainLosses = {
+        "total": trainLossSum.item() / len(trainDataLoader),
+        "detection": YoloLoss(outputs[1], bboxes).item() / len(trainDataLoader),
+        "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(trainDataLoader),
+        }
+
 
         # Backward pass and optimization
         optimizer.zero_grad()
@@ -82,9 +89,15 @@ for epoch in range(epochs):
             # Forward pass
             outputs = model(lowResImages)
             valLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
-            print(f"Val Loss: {valLoss}")
             valLossSum = valLossSum + valLoss
-    
+
+            valLosses = {
+            "total": valLossSum.item() / len(valDataLoader),
+            "detection": YoloLoss(outputs[1], bboxes).item() / len(valDataLoader),
+            "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(valDataLoader),
+            }
+
+    logLosses("training_logs.json", epoch + 1, trainLosses, valLosses)
     torch.save(model.state_dict(), 'YoloAutoencoder.pth')
     """
     # Auto saving of the model during Colab training
@@ -93,7 +106,7 @@ for epoch in range(epochs):
     os.system(f'git commit YoloAutoencoder.pth -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs}, Batch {batchNumber}/{totalBatch} - {current_time}"')
     os.system('git push -u origin main')
     """
-   
+    """
     # Show the last reconstructed image
     import matplotlib.pyplot as plt
     last_low_res_image = lowResImages[-1].cpu().detach().numpy().squeeze()
@@ -114,5 +127,5 @@ for epoch in range(epochs):
     axes[2].axis('off')
 
     plt.show()
-
+    """
     print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLossSum/len(trainDataLoader):.4f}, Validation Loss: {valLossSum/len(valDataLoader):.4f}")
