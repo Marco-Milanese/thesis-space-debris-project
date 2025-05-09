@@ -51,9 +51,9 @@ class SpaceDebrisDataset(Dataset):
             newBbox = [1, (bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2, (bbox[1] - bbox[0]), (bbox[3] - bbox[2])]
             newBboxes.append(self.toCellCoord(newBbox))
 
-        zeros = [0, 0, 0, 0, 0, 0]
+        zeros = torch.tensor([0, 0, 0, 0, 0, 0])
         for i in range(7 - len(newBboxes)):
-            newBboxes.append(self.toCellCoord(zeros))
+            newBboxes.append(zeros)
         
         # Convert the bboxes to a tensor    
         newBboxes = torch.tensor(newBboxes)

@@ -71,7 +71,7 @@ class Autoencoder(nn.Module):
         # detection head
         self.detection = nn.Sequential(
             CBAM(inChannels=512, redRatio=16, kernelSize=7),
-            nn.Conv2d(512, 10, 1)
+            nn.Conv2d(512, 5, 1)
         )
 
 

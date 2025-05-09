@@ -43,11 +43,12 @@ MseLoss = nn.MSELoss()
 lambdaSR = 5
 # Adam optimizer with the specified betas and learning rate
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99))
-trainLossSum = 0.0
 
 for epoch in range(epochs):
     # Training phase
     batchNumber = 0
+    trainLossSum = 0.0
+    valLossSum = 0.0
     model.train()
     for data in trainDataLoader:
         batchNumber += 1
@@ -61,9 +62,7 @@ for epoch in range(epochs):
         bboxes = bboxes.to(device)
         # Forward pass
         outputs = model(lowResImages)
-        print("Reconstructed:", outputs[0].min, "Target:", hiResImages.shape)
-        #YoloLoss(outputs[1], bboxes) +
-        trainLoss =  lambdaSR * MseLoss(outputs[0], hiResImages)
+        trainLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
         print(f"Train Loss: {trainLoss}")
         trainLossSum = trainLossSum + trainLoss
 
@@ -75,7 +74,6 @@ for epoch in range(epochs):
     # Validation phase to prevent overfitting
     model.eval()
     with torch.no_grad():
-        valLossSum = 0.0
         for data in valDataLoader:
             lowResImages, hiResImages, bboxes= data
             lowResImages = lowResImages.to(device)
@@ -83,8 +81,7 @@ for epoch in range(epochs):
             bboxes = bboxes.to(device)
             # Forward pass
             outputs = model(lowResImages)
-            #YoloLoss(outputs[1], bboxes) +
-            valLoss =lambdaSR * MseLoss(outputs[0], hiResImages)
+            valLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
             print(f"Val Loss: {valLoss}")
             valLossSum = valLossSum + valLoss
     
