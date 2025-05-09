@@ -1,5 +1,5 @@
 import torch
-import torchvision
+from torchvision.transforms import ToPILImage
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from YoloAutoencoder import Autoencoder
@@ -15,18 +15,21 @@ model.eval()
 
 # Load dataset (adjust paths if needed)
 dataset = SpaceDebrisDataset(
-    csv_file="./data/train.csv",  # Update this if needed
-    lowResDirectory="./data/LowResTrain1ch",
-    hiResDirectory="./data/Train1ch"
+    csv_file="./data/test.csv",  # Update this if needed
+    lowResDirectory="./data/test21ch",
+    hiResDirectory="./data/Test1ch"
 )
 
 # Parameters
 gridSize = 16
 confThreshold = 0.5
-iouThreshold = 0
+iouThreshold = 0.4
+
+
 
 def runInference(index=0):
     lowResImage, _, _ = dataset[index]
+    
     inputTensor = lowResImage.unsqueeze(0).to(device)  # Add batch dimension
 
     with torch.no_grad():
@@ -72,8 +75,13 @@ def runInference(index=0):
     filteredBoxes = boxesTensor[keepIndices]
 
     # Visualization
-    imageArray = generatedImage.squeeze().cpu().numpy()
-
+    imageArray = generatedImage.squeeze().clamp(0,1).cpu().numpy()
+    
+    print(f"image min:", generatedImage.min().item())
+    print(f"image max:", generatedImage.max().item())
+    to_pil_image = ToPILImage()
+    to_pil_image(generatedImage.squeeze().clamp(0,1)).show()
+    
     fig, ax = plt.subplots(1)
     ax.imshow(imageArray, cmap="gray")
 
@@ -81,7 +89,7 @@ def runInference(index=0):
         x1, y1, x2, y2 = box
         boxWidth = x2 - x1
         boxHeight = y2 - y1
-        rect = patches.Rectangle((x1, y1), boxWidth, boxHeight, linewidth=2, edgecolor='red', facecolor='none')
+        rect = patches.Rectangle((x1, y1), boxWidth, boxHeight, linewidth=2, edgecolor='blue', facecolor='none')
         ax.add_patch(rect)
 
     plt.title(f"Predicted Bounding Boxes - Image {index}")
@@ -89,4 +97,4 @@ def runInference(index=0):
     plt.show()
 
 # Run on the first image
-runInference(index=5554)
+runInference(index=5)

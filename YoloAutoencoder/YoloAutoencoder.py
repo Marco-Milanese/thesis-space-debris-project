@@ -12,7 +12,7 @@ class Autoencoder(nn.Module):
             nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(),
-            CBAM(inChannels=32, redRatio=4, kernelSize=7)
+            CBAM(inChannels=32, redRatio=4, kernelSize=7, show=True)
         )
         self.enc2 = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
