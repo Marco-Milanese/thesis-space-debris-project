@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 from YoloLoss import YoloLoss
 from lossLogger import logLosses
-
+from tqdm import tqdm
 
 # Select the GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,11 +32,11 @@ model = Autoencoder().to(device)
 
 # Load the pre-trained model if available
 if os.path.exists('./YoloAutoencoderV2.pth'):
-    print("Loading pre-trained model")
+    print("Loading pre-trained model\n")
     model.load_state_dict(torch.load('./YoloAutoencoderV2.pth', map_location="cpu"))
     model.to(device)
 else:
-    print('No pre-trained model')
+    print('No pre-trained model\n')
     
 # Defining the loss function and optimizer
 YoloLoss = YoloLoss()
@@ -45,16 +45,15 @@ lambdaSR = 5
 # Adam optimizer with the specified betas and learning rate
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99))
 
-for epoch in range(epochs):
+for epoch in tqdm(range(epochs)):
     # Training phase
     batchNumber = 0
     trainLossSum = 0.0
     valLossSum = 0.0
     model.train()
-    for data in trainDataLoader:
+    for data in tqdm(trainDataLoader):
         batchNumber += 1
         totalBatch = len(trainDataLoader)
-        print(f"Epoch {epoch+1}/{epochs} Batch {batchNumber}/{totalBatch}")
 
         # Pushing the data to the available device
         lowResImages, hiResImages, bboxes= data 
@@ -74,7 +73,7 @@ for epoch in range(epochs):
     # Validation phase to prevent overfitting
     model.eval()
     with torch.no_grad():
-        for data in valDataLoader:
+        for data in tqdm(valDataLoader):
             lowResImages, hiResImages, bboxes= data
             lowResImages = lowResImages.to(device)
             hiResImages = hiResImages.to(device)
