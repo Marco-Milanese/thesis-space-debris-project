@@ -2,7 +2,7 @@ from YoloDataLoader import SpaceDebrisDataset
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
-from YoloAutoencoder import Autoencoder
+from YoloAutoencoderV2 import Autoencoder
 import os
 from datetime import datetime
 from YoloLoss import YoloLoss
@@ -31,9 +31,9 @@ valDataLoader = DataLoader(ValSet, batch_size, shuffle=True)
 model = Autoencoder().to(device)
 
 # Load the pre-trained model if available
-if os.path.exists('./YoloAutoencoder4.pth'):
+if os.path.exists('./YoloAutoencoderV2.pth'):
     print("Loading pre-trained model")
-    model.load_state_dict(torch.load('./YoloAutoencoder.pth', map_location="cpu"))
+    model.load_state_dict(torch.load('./YoloAutoencoderV2.pth', map_location="cpu"))
     model.to(device)
 else:
     print('No pre-trained model')
@@ -66,13 +66,6 @@ for epoch in range(epochs):
         trainLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
         trainLossSum = trainLossSum + trainLoss
 
-        trainLosses = {
-        "total": trainLossSum.item() / len(trainDataLoader),
-        "detection": YoloLoss(outputs[1], bboxes).item() / len(trainDataLoader),
-        "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(trainDataLoader),
-        }
-
-
         # Backward pass and optimization
         optimizer.zero_grad()
         trainLoss.backward()
@@ -91,14 +84,18 @@ for epoch in range(epochs):
             valLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
             valLossSum = valLossSum + valLoss
 
-            valLosses = {
-            "total": valLossSum.item() / len(valDataLoader),
-            "detection": YoloLoss(outputs[1], bboxes).item() / len(valDataLoader),
-            "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(valDataLoader),
-            }
-
-    logLosses("training_logs.json", epoch + 1, trainLosses, valLosses)
-    torch.save(model.state_dict(), 'YoloAutoencoder.pth')
+    trainLosses = {
+    "total": trainLossSum.item() / len(trainDataLoader),
+    "detection": YoloLoss(outputs[1], bboxes).item() / len(trainDataLoader),
+    "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(trainDataLoader),
+    }
+    valLosses = {
+    "total": valLossSum.item() / len(valDataLoader),
+    "detection": YoloLoss(outputs[1], bboxes).item() / len(valDataLoader),
+    "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(valDataLoader),
+    }
+    logLosses("YoloAutoencoderV2TrainingLogs.json", epoch + 1, trainLosses, valLosses)
+    torch.save(model.state_dict(), 'YoloAutoencoderV2.pth')
     """
     # Auto saving of the model during Colab training
     os.system('git add  YoloAutoencoder.pth')

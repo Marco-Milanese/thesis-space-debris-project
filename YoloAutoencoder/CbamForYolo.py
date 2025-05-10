@@ -56,8 +56,6 @@ class SpatialAttention(nn.Module):
         if show:
             to_pil_image = ToPILImage()
             to_pil_image(x.squeeze()).show()
-
-
         return x
     
 

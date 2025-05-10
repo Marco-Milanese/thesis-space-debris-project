@@ -29,7 +29,7 @@ def logLosses(logFile, epoch, trainLosses, valLosses):
         json.dump(logData, f, indent=4)
 
 
-import json
+"""import json
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -58,4 +58,4 @@ plt.ylabel("Loss")
 plt.title("Training & Validation Loss Over Time")
 plt.grid(True)
 plt.show()
-
+"""

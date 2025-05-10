@@ -24,6 +24,7 @@ class YoloLoss(nn.Module):
 
         
         # transforms predictions from [Batch, 5, 16, 16] to [Batch, 256, 5] so that we can use the n of the targets to find the corresponding prediction
+        print(f"pred shape: {predictions.shape}")
         predictions = predictions.permute(0, 2, 3, 1).reshape(-1, self.S * self.S, 5)
 
 
