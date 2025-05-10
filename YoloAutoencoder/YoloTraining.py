@@ -2,7 +2,7 @@ from YoloDataLoader import SpaceDebrisDataset
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
-from YoloAutoencoderV2 import Autoencoder
+from YoloAutoencoder import Autoencoder
 import os
 from datetime import datetime
 from YoloLoss import YoloLoss
@@ -31,9 +31,9 @@ valDataLoader = DataLoader(ValSet, batch_size, shuffle=True)
 model = Autoencoder().to(device)
 
 # Load the pre-trained model if available
-if os.path.exists('./YoloAutoencoderV2.pth'):
+if os.path.exists('./YoloAutoencoder.pth'):
     print("Loading pre-trained model\n")
-    model.load_state_dict(torch.load('./YoloAutoencoderV2.pth', map_location="cpu"))
+    model.load_state_dict(torch.load('./YoloAutoencoder.pth', map_location="cpu"))
     model.to(device)
 else:
     print('No pre-trained model\n')
