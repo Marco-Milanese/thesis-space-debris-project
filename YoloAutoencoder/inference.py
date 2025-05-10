@@ -16,7 +16,7 @@ model.eval()
 # Load dataset (adjust paths if needed)
 dataset = SpaceDebrisDataset(
     csv_file="./data/test.csv",  # Update this if needed
-    lowResDirectory="./data/test21ch",
+    lowResDirectory="./data/LowResTest1ch",
     hiResDirectory="./data/Test1ch"
 )
 
@@ -97,4 +97,4 @@ def runInference(index=0):
     plt.show()
 
 # Run on the first image
-runInference(index=5)
+runInference(index=1998)
