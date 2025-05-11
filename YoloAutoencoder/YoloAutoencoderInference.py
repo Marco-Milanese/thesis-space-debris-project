@@ -1,48 +1,47 @@
 import torch
-from torchvision.transforms import ToPILImage
+from torchvision.transforms import ToPILImage, ToTensor
+from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from YoloAutoencoder import Autoencoder
-from YoloDataLoader import SpaceDebrisDataset
 from torchvision.ops import nms
-import os
-
-# Load model
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = Autoencoder().to(device)
-model.load_state_dict(torch.load("YoloAutoencoder.pth", map_location=device))
-model.eval()
-
-# Load dataset (adjust paths if needed)
-dataset = SpaceDebrisDataset(
-    csv_file="./data/test.csv",  # Update this if needed
-    lowResDirectory="./data/LowResTest1ch",
-    hiResDirectory="./data/Test1ch"
-)
-
-# Parameters
-gridSize = 16
-confThreshold = 0.5
-iouThreshold = 0.4
+to_pil_image = ToPILImage()
 
 
+def Inference(imagePath, modelPath="YoloAutoencoder.pth"):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    inferenceModel = Autoencoder().to(device)
+    inferenceModel.load_state_dict(torch.load(modelPath, map_location=device))
+    inferenceModel.eval()
 
-def runInference(index=0):
-    lowResImage, _, _ = dataset[index]
-    
-    inputTensor = lowResImage.unsqueeze(0).to(device)  # Add batch dimension
-
+    # Convert the image to a tensor an add a batch dimension
+    inputImage = ToTensor()(Image.open(imagePath)).unsqueeze(0).to(device)
+    print(f"shape: {inputImage.shape}")
     with torch.no_grad():
-        generatedImage, rawPredictions = model(inputTensor)
+        generatedImage, rawPredictions = inferenceModel(inputImage)
 
-    rawPredictions = rawPredictions.squeeze(0).permute(1, 2, 0).reshape(-1, 5)  # [256, 5]
+    # The shape of the raw predictions is [5, 16, 16]
+    # Remove batch dimension and reshape to [256, 5]
+    rawPredictions = rawPredictions.squeeze(0).permute(1, 2, 0).reshape(-1, 5)
 
+    return generatedImage, rawPredictions
+
+
+def Visualize(imagePath, modelPath="YoloAutoencoder.pth"):
+    # Parameters
+    gridSize = 16
+    confThreshold = 0.5
+    iouThreshold = 0.4
+
+    generatedImage, rawPredictions = Inference(imagePath, modelPath)
+
+    imageSize, _ = to_pil_image(generatedImage.squeeze()).size
     boxes = []
     confidences = []
-
     cellSize = 1 / gridSize
+
     for i, prediction in enumerate(rawPredictions):
-        confidence, xCell, yCell, width, height = prediction.tolist()
+        confidence, xCell, yCell, width, height = prediction
         if confidence < confThreshold:
             continue
 
@@ -52,10 +51,10 @@ def runInference(index=0):
         xCenter = (xCell + cellX) * cellSize
         yCenter = (yCell + cellY) * cellSize
 
-        absX = xCenter * 512
-        absY = yCenter * 512
-        absW = width * 512
-        absH = height * 512
+        absX = xCenter * imageSize
+        absY = yCenter * imageSize
+        absW = width * imageSize
+        absH = height * imageSize
 
         x1 = absX - absW / 2
         y1 = absY - absH / 2
@@ -66,7 +65,7 @@ def runInference(index=0):
         confidences.append(confidence)
 
     if not boxes:
-        print(f"No boxes detected above threshold in image {index}.")
+        print("No boxes above the threshold detected.")
         return
 
     boxesTensor = torch.tensor(boxes)
@@ -79,7 +78,6 @@ def runInference(index=0):
     
     print(f"image min:", generatedImage.min().item())
     print(f"image max:", generatedImage.max().item())
-    to_pil_image = ToPILImage()
     to_pil_image(generatedImage.squeeze().clamp(0,1)).show()
     
     fig, ax = plt.subplots(1)
@@ -92,9 +90,9 @@ def runInference(index=0):
         rect = patches.Rectangle((x1, y1), boxWidth, boxHeight, linewidth=2, edgecolor='blue', facecolor='none')
         ax.add_patch(rect)
 
-    plt.title(f"Predicted Bounding Boxes - Image {index}")
+    plt.title("Predicted Bounding Boxes")
     plt.axis("off")
     plt.show()
 
-# Run on the first image
-runInference(index=1998)
+
+Visualize("data/LowResTest1ch/1998.jpg")

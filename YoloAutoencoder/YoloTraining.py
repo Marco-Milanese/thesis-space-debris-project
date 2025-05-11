@@ -14,16 +14,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Load the Training and Validation datasets
-TrainingSet = SpaceDebrisDataset('./data/train.csv', './data/LowResTrain1ch', './data/Train1ch')
+TrainingSet = SpaceDebrisDataset('./data/trainTest.csv', './data/LowResTrain1ch', './data/Train1ch')
 TrainLen = len(TrainingSet)
 print(f'Training set size: {TrainLen}')
 
-ValSet = SpaceDebrisDataset('./data/val.csv', './data/LowResVal1ch', './data/Val1ch')
+ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/LowResVal1ch', './data/Val1ch')
 ValLen = len(ValSet)
 print(f'Validation set size: {ValLen}')
 
-batch_size = 128 # batch size chosen as 2^7, good for Colab GPU memory
-epochs = 10
+batch_size = 1 # batch size chosen as 2^7, good for Colab GPU memory
+epochs = 3
 
 # Load the datasets into dataloaders
 trainDataLoader = DataLoader(TrainingSet, batch_size, shuffle=True)
@@ -48,8 +48,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.99))
 for epoch in tqdm(range(epochs)):
     # Training phase
     batchNumber = 0
-    trainLossSum = 0.0
-    valLossSum = 0.0
+    trainingLosses = torch.zeros(3, device=device)
+    validationLosses = torch.zeros(3, device=device)
     model.train()
     for data in tqdm(trainDataLoader):
         batchNumber += 1
@@ -60,10 +60,17 @@ for epoch in tqdm(range(epochs)):
         lowResImages = lowResImages.to(device) 
         hiResImages = hiResImages.to(device)
         bboxes = bboxes.to(device)
-        # Forward pass
+        # Forward pass and loss calculation
         outputs = model(lowResImages)
-        trainLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
-        trainLossSum = trainLossSum + trainLoss
+
+        yoloLoss = YoloLoss(outputs[1], bboxes)
+        mseLoss = MseLoss(outputs[0], hiResImages)
+        trainLoss = yoloLoss + lambdaSR * mseLoss
+
+        # Saving the losses for logging
+        trainingLosses[0] += yoloLoss
+        trainingLosses[1] += mseLoss
+        trainingLosses[2] += trainLoss
 
         # Backward pass and optimization
         optimizer.zero_grad()
@@ -80,21 +87,18 @@ for epoch in tqdm(range(epochs)):
             bboxes = bboxes.to(device)
             # Forward pass
             outputs = model(lowResImages)
-            valLoss = YoloLoss(outputs[1], bboxes) + lambdaSR * MseLoss(outputs[0], hiResImages)
-            valLossSum = valLossSum + valLoss
 
-    trainLosses = {
-    "total": trainLossSum.item() / len(trainDataLoader),
-    "detection": YoloLoss(outputs[1], bboxes).item() / len(trainDataLoader),
-    "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(trainDataLoader),
-    }
-    valLosses = {
-    "total": valLossSum.item() / len(valDataLoader),
-    "detection": YoloLoss(outputs[1], bboxes).item() / len(valDataLoader),
-    "reconstruction": (lambdaSR * MseLoss(outputs[0], hiResImages)).item() / len(valDataLoader),
-    }
-    logLosses("YoloAutoencoderV2TrainingLogs.json", epoch + 1, trainLosses, valLosses)
-    torch.save(model.state_dict(), 'YoloAutoencoderV2.pth')
+            yoloLoss = YoloLoss(outputs[1], bboxes)
+            mseLoss = MseLoss(outputs[0], hiResImages)
+            valLoss = yoloLoss + lambdaSR * mseLoss
+            # Saving the losses for logging
+            validationLosses[0] += yoloLoss
+            validationLosses[1] += mseLoss
+            validationLosses[2] += valLoss 
+
+    torch.save(model.state_dict(), 'YoloAutoencoderTest.pth')
+    logLosses(epoch+1, trainingLosses/len(trainDataLoader), validationLosses/len(valDataLoader))
+    
     """
     # Auto saving of the model during Colab training
     os.system('git add  YoloAutoencoder.pth')
@@ -102,26 +106,5 @@ for epoch in tqdm(range(epochs)):
     os.system(f'git commit YoloAutoencoder.pth -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs}, Batch {batchNumber}/{totalBatch} - {current_time}"')
     os.system('git push -u origin main')
     """
-    """
-    # Show the last reconstructed image
-    import matplotlib.pyplot as plt
-    last_low_res_image = lowResImages[-1].cpu().detach().numpy().squeeze()
-    last_reconstructed_image = outputs[0][-1].cpu().detach().numpy().squeeze()
-    last_high_res_image = hiResImages[-1].cpu().detach().numpy().squeeze()
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    axes[0].imshow(last_low_res_image, cmap='gray')
-    axes[0].set_title("Low-Res Input")
-    axes[0].axis('off')
-
-    axes[1].imshow(last_reconstructed_image, cmap='gray')
-    axes[1].set_title("Reconstructed Output")
-    axes[1].axis('off')
-
-    axes[2].imshow(last_high_res_image, cmap='gray')
-    axes[2].set_title("High-Res Ground Truth")
-    axes[2].axis('off')
-
-    plt.show()
-    """
-    print(f"Epoch [{epoch+1}/{epochs}], Training Loss: {trainLossSum/len(trainDataLoader):.4f}, Validation Loss: {valLossSum/len(valDataLoader):.4f}")
+    print(f"Epoch [{epoch+1}/{epochs}], Average Training Loss: {trainingLosses[2].item()/len(trainDataLoader):.4f}, Average Validation Loss: {validationLosses[2]/len(valDataLoader):.4f}")
