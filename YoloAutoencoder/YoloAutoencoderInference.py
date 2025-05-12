@@ -16,7 +16,6 @@ def Inference(imagePath, modelPath="YoloAutoencoder.pth"):
 
     # Convert the image to a tensor an add a batch dimension
     inputImage = ToTensor()(Image.open(imagePath)).unsqueeze(0).to(device)
-    print(f"shape: {inputImage.shape}")
     with torch.no_grad():
         generatedImage, rawPredictions = inferenceModel(inputImage)
 
@@ -93,6 +92,3 @@ def Visualize(imagePath, modelPath="YoloAutoencoder.pth"):
     plt.title("Predicted Bounding Boxes")
     plt.axis("off")
     plt.show()
-
-
-Visualize("data/LowResTest1ch/1998.jpg")

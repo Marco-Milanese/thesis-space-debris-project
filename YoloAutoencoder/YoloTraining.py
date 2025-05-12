@@ -14,16 +14,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Load the Training and Validation datasets
-TrainingSet = SpaceDebrisDataset('./data/trainTest.csv', './data/LowResTrain1ch', './data/Train1ch')
+TrainingSet = SpaceDebrisDataset('./data/train.csv', './data/LowResTrain1ch', './data/Train1ch')
 TrainLen = len(TrainingSet)
 print(f'Training set size: {TrainLen}')
 
-ValSet = SpaceDebrisDataset('./data/valTest.csv', './data/LowResVal1ch', './data/Val1ch')
+ValSet = SpaceDebrisDataset('./data/val.csv', './data/LowResVal1ch', './data/Val1ch')
 ValLen = len(ValSet)
 print(f'Validation set size: {ValLen}')
 
-batch_size = 1 # batch size chosen as 2^7, good for Colab GPU memory
-epochs = 3
+batch_size = 128 # batch size chosen as 2^7, good for Colab GPU memory
+epochs = 20
 
 # Load the datasets into dataloaders
 trainDataLoader = DataLoader(TrainingSet, batch_size, shuffle=True)
