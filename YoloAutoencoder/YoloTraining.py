@@ -2,7 +2,7 @@ from YoloDataLoader import SpaceDebrisDataset
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
-from YoloAutoencoder import Autoencoder
+from YoloAutoencoderV2 import Autoencoder
 import os
 from datetime import datetime
 from YoloLoss import YoloLoss
@@ -31,9 +31,9 @@ valDataLoader = DataLoader(ValSet, batch_size, shuffle=True)
 model = Autoencoder().to(device)
 
 # Load the pre-trained model if available
-if os.path.exists('./YoloAutoencoder.pth'):
+if os.path.exists('./YoloAutoencoderV2.pth'):
     print("Loading pre-trained model\n")
-    model.load_state_dict(torch.load('./YoloAutoencoder.pth', map_location="cpu"))
+    model.load_state_dict(torch.load('./YoloAutoencoderV2.pth', map_location="cpu"))
     model.to(device)
 else:
     print('No pre-trained model\n')
@@ -96,15 +96,13 @@ for epoch in tqdm(range(epochs)):
             validationLosses[1] += mseLoss
             validationLosses[2] += valLoss 
 
-    torch.save(model.state_dict(), 'YoloAutoencoderTest.pth')
+    torch.save(model.state_dict(), 'YoloAutoencoderV2.pth')
     logLosses(epoch+1, trainingLosses/len(trainDataLoader), validationLosses/len(valDataLoader))
     
-    """
-    # Auto saving of the model during Colab training
-    os.system('git add  YoloAutoencoder.pth')
-    current_time = datetime.now().strftime("%A, %d %B %Y")
-    os.system(f'git commit YoloAutoencoder.pth -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs}, Batch {batchNumber}/{totalBatch} - {current_time}"')
-    os.system('git push -u origin main')
-    """
+    if (epoch+1) % 5 == 0:
+        current_time = datetime.now().strftime("%A, %d %B %Y")
+        os.system(f'git commit . -a -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs} - {current_time}"')
+        os.system('git push -u origin main')
+    
 
     print(f"Epoch [{epoch+1}/{epochs}], Average Training Loss: {trainingLosses[2].item()/len(trainDataLoader):.4f}, Average Validation Loss: {validationLosses[2]/len(valDataLoader):.4f}")
