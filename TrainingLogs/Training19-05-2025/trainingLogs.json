@@ -1,0 +1,37 @@
+{
+    "1": {
+        "Validation": {
+            "Detection": 160.54197692871094,
+            "Reconstruction": 0.01276686042547226,
+            "Total": 160.60581970214844
+        }
+    },
+    "2": {
+        "Validation": {
+            "Detection": 105.90376281738281,
+            "Reconstruction": 0.005240264348685741,
+            "Total": 105.92996978759766
+        }
+    },
+    "3": {
+        "Validation": {
+            "Detection": 97.5617446899414,
+            "Reconstruction": 0.0026114434003829956,
+            "Total": 97.57479858398438
+        }
+    },
+    "4": {
+        "Validation": {
+            "Detection": 81.23280334472656,
+            "Reconstruction": 0.001640120055526495,
+            "Total": 81.24099731445312
+        }
+    },
+    "5": {
+        "Validation": {
+            "Detection": 192.0334930419922,
+            "Reconstruction": 0.0015702492091804743,
+            "Total": 192.0413360595703
+        }
+    }
+}
