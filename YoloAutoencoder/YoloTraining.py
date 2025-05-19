@@ -101,7 +101,8 @@ for epoch in tqdm(range(epochs)):
     
     if (epoch+1) % 5 == 0:
         current_time = datetime.now().strftime("%A, %d %B %Y")
-        os.system(f'git commit . -a -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs} - {current_time}"')
+        os.system('git add .')
+        os.system(f'git commit . -m "AutoSave of the model during training - Epoch {epoch+1}/{epochs} - {current_time}"')
         os.system('git push -u origin main')
     
 
